@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Creatora AI
 
 A local Flask prototype for an AI-native creator marketplace: AI portfolios, creator discovery, campaign briefs, applications, and a delivery/revision workflow. The interface uses local CSS/JavaScript and does not need remote fonts, images, paid services, or an AI API key.
@@ -164,3 +165,6 @@ The local brief builder is transparent rules-based assistance, not an LLM. Verif
 - Verification sample records exist solely to demonstrate status display; seeded evidence is fictional and visibly labeled.
 - Licensing fields express brief requirements only and are not legal advice.
 - The included automated suite covers the core account, discovery, brief, application, delivery, revision, and ownership flows. Use `DEMO_SCRIPT.md` to exercise the visual experience in a browser.
+=======
+# CREATORA-AI
+>>>>>>> c37db6dbd9c6d2b8b044c84005a66eed37d6b335
