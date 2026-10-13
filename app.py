@@ -73,6 +73,19 @@ app.config["PASSWORD_RESET_MAX_AGE"] = int(
     os.getenv("PASSWORD_RESET_MAX_AGE", "3600")
 )
 database_url = os.getenv("DATABASE_URL", "sqlite:///marketplace.db").strip()
+
+# Strip wrapping quotes that break URL parsing on platforms like Render
+if (database_url.startswith('"') and database_url.endswith('"')) or (
+    database_url.startswith("'") and database_url.endswith("'")
+):
+    database_url = database_url[1:-1].strip()
+
+if not database_url:
+    raise RuntimeError(
+        "DATABASE_URL is set but empty. Provide a valid database connection "
+        "string or remove the variable to use the SQLite fallback."
+    )
+
 if database_url.startswith("postgres://"):
     database_url = "postgresql://" + database_url.removeprefix("postgres://")
 if database_url.startswith("postgresql://"):
@@ -85,6 +98,28 @@ if database_url.startswith("oracle+cx_oracle://"):
     database_url = "oracle+oracledb://" + database_url.removeprefix(
         "oracle+cx_oracle://"
     )
+
+# Validate the URL before handing it to SQLAlchemy so errors are clear
+import sqlalchemy as _sa
+try:
+    _parsed = _sa.engine.make_url(database_url)
+    # Mask password for safe logging
+    _safe = _parsed.set(password="***") if _parsed.password else _parsed
+    print(f"[startup] Database dialect: {_parsed.drivername}, host: {_parsed.host}")
+except Exception as _exc:
+    # Show the scheme (first 30 chars) without leaking the full password
+    _preview = database_url[:30] + ("..." if len(database_url) > 30 else "")
+    raise RuntimeError(
+        f"DATABASE_URL is not a valid SQLAlchemy connection string.\n"
+        f"  Preview: {_preview!r}\n"
+        f"  Error:   {_exc}\n"
+        f"  Hints:   - Remove surrounding quotes from the value\n"
+        f"           - URL-encode special characters in the password "
+        f"(@ → %40, # → %23, / → %2F)\n"
+        f"           - Make sure the URL starts with a valid scheme "
+        f"(postgresql://, sqlite:///, oracle://)"
+    ) from None
+
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SUPABASE_URL"] = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
 app.config["SUPABASE_KEY"] = (
