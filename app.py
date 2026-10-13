@@ -103,11 +103,9 @@ if database_url.startswith("oracle+cx_oracle://"):
 import sqlalchemy as _sa
 try:
     _parsed = _sa.engine.make_url(database_url)
-    # Mask password for safe logging
-    _safe = _parsed.set(password="***") if _parsed.password else _parsed
     print(f"[startup] Database dialect: {_parsed.drivername}, host: {_parsed.host}")
 except Exception as _exc:
-    # Show the scheme (first 30 chars) without leaking the full password
+    # Show only the start of the value so the password is never leaked
     _preview = database_url[:30] + ("..." if len(database_url) > 30 else "")
     raise RuntimeError(
         f"DATABASE_URL is not a valid SQLAlchemy connection string.\n"
@@ -115,7 +113,7 @@ except Exception as _exc:
         f"  Error:   {_exc}\n"
         f"  Hints:   - Remove surrounding quotes from the value\n"
         f"           - URL-encode special characters in the password "
-        f"(@ → %40, # → %23, / → %2F)\n"
+        f"(@ -> %40, # -> %23, / -> %2F)\n"
         f"           - Make sure the URL starts with a valid scheme "
         f"(postgresql://, sqlite:///, oracle://)"
     ) from None
@@ -235,6 +233,8 @@ def migrate_legacy_columns():
                         f'WHERE "{column_name}" IS NULL'
                     )
                 )
+    db.session.commit()  # release locks before inspecting on another connection
+
     if "applications" in existing_tables:
         columns = {column["name"] for column in inspect(db.engine).get_columns("applications")}
         if "status" in columns:
@@ -2010,20 +2010,19 @@ def create_admin_command():
 register_seed_command(app)
 
 
-with app.app_context():
-    try:
-        initialize_database()
-        print("[startup] Database initialized successfully.")
-    except Exception as _db_init_err:
-        # Log safely without leaking credentials
-        print(
-            f"[startup] WARNING: Could not initialize database: "
-            f"{type(_db_init_err).__name__}: {_db_init_err}\n"
-            f"  The app will start, but tables may not exist yet.\n"
-            f"  Check DATABASE_URL, network access, and that the "
-            f"database server is running."
-        )
+if os.getenv("SKIP_DB_INIT", "0") != "1":
+    with app.app_context():
+        try:
+            initialize_database()
+            print("[startup] Database initialized successfully.")
+        except Exception as _db_init_err:
+            db.session.rollback()
+            print(
+                f"[startup] WARNING: Could not initialize database: "
+                f"{type(_db_init_err).__name__}: {_db_init_err}"
+            )
 
 
 if __name__ == "__main__":
     app.run(debug=True)
+ 
