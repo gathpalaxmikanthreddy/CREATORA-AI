@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ "Applications for " ~ brief.title if brief else "My applications" }} | Creatora AI{% endblock %}
+{% block content %}
+<section class="section-wrap profile-layout">
+    {% if brief %}<a class="back-link" href="{{ url_for('brief_detail', brief_id=brief.id) }}">← Back to brief</a>{% else %}<a class="back-link" href="{{ url_for('dashboard') }}">← Dashboard</a>{% endif %}
+    <div class="form-heading"><span class="eyebrow">{{ "BRAND REVIEW" if brief else "YOUR CREATOR JOURNEY" }}</span><h1>{{ "Creator applications." if brief else "Your applications." }}</h1>{% if brief %}<p class="lead">{{ brief.title }} · Review proposals, shortlist applicants, and accept one creator to begin an engagement.</p>{% endif %}</div>
+    {% if applications %}<div class="card-grid">{% for application in applications %}
+        <article class="surface-card application-card">
+            <div class="card-topline"><a class="text-link" href="{{ url_for('creator_profile', profile_id=application.creator.creator_profile.id) }}">{{ application.creator.name }}</a><span class="availability">{{ (application.engagement.status if application.engagement else application.status)|humanize_status }}</span></div>
+            {% if brief %}<p class="application-message">{{ application.message or "No proposal message was included." }}</p><span class="muted">Applied {{ application.created_at.strftime("%b %d, %Y") if application.created_at else "" }}</span>
+                {% if application.engagement %}<a class="text-link" href="{{ url_for('engagement_detail', engagement_id=application.engagement.id) }}">Open engagement ↗</a>
+                {% elif application.status not in ["accepted", "declined"] %}
+                    <div class="application-actions">
+                        {% for status, label in [("shortlisted", "Shortlist"), ("accepted", "Accept"), ("declined", "Decline")] %}
+                            <form method="post" action="{{ url_for('update_application', application_id=application.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="status" value="{{ status }}"><button class="button button-small {{ 'button-outline' if status != 'accepted' else '' }}" type="submit">{{ label }}</button></form>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <h2>{{ application.brief.title }}</h2><p>{{ application.brief.brand.name }} · {{ application.message or "Application submitted." }}</p>
+                {% if application.engagement %}<a class="text-link" href="{{ url_for('engagement_detail', engagement_id=application.engagement.id) }}">View engagement ↗</a>{% else %}<a class="text-link" href="{{ url_for('brief_detail', brief_id=application.brief_id) }}">View brief ↗</a>{% endif %}
+            {% endif %}
+        </article>
+    {% endfor %}</div>{% else %}
+        <div class="empty-state"><span class="empty-icon">✳</span><h2>No applications yet.</h2><p>{% if brief %}When creators apply, you can review their proposal here.{% else %}Find a brief that fits your work and send a thoughtful proposal.{% endif %}</p>{% if not brief %}<a class="button" href="{{ url_for('briefs') }}">Browse open briefs</a>{% endif %}</div>
+    {% endif %}
+</section>
+{% endblock %}

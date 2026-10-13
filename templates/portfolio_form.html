@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if item.id else "Add" }} portfolio work | Creatora AI{% endblock %}
+{% block content %}
+<section class="form-page section-wrap">
+    <a class="back-link" href="{{ url_for('creator_profile', profile_id=item.creator_profile_id) if item.id else url_for('dashboard') }}">← Back</a>
+    <div class="form-heading"><span class="eyebrow">AI PORTFOLIO</span><h1>Show how you made it.</h1><p class="lead">Tool, skill, format, and workflow details help brands evaluate AI-native work. Claims remain unverified unless explicitly reviewed.</p></div>
+    <form class="surface-card form-card" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field-grid">
+            <div class="field"><label for="title">Project title</label><input id="title" name="title" value="{{ item.title }}" maxlength="150" required></div>
+            <div class="field"><label for="media_type">Content type</label><select id="media_type" name="media_type">{% for value in ["video", "animation", "image", "graphics", "audio", "other"] %}<option value="{{ value }}" {% if item.media_type == value %}selected{% endif %}>{{ value|title }}</option>{% endfor %}</select></div>
+            <div class="field"><label for="project_role">Your role</label><input id="project_role" name="project_role" value="{{ item.project_role }}" maxlength="180" placeholder="Concept, prompting, edit, sound design"></div>
+            <div class="field"><label for="specialization">Specialization</label><input id="specialization" name="specialization" value="{{ item.specialization }}" maxlength="80" placeholder="AI Filmmaking, Generative Art"></div>
+            <div class="field"><label for="year">Year</label><input id="year" name="year" type="number" min="2000" max="2100" value="{{ item.year or '' }}"></div>
+            <div class="field"><label for="format">Format / platform</label><input id="format" name="format" value="{{ item.format }}" maxlength="80" placeholder="Instagram Reel, 1080 × 1920"></div>
+            <div class="field"><label for="aspect_ratio">Aspect ratio</label><input id="aspect_ratio" name="aspect_ratio" value="{{ item.aspect_ratio }}" maxlength="30" placeholder="9:16"></div>
+            <div class="field"><label for="tools">Tools / models (comma-separated)</label><input id="tools" name="tools" value="{{ item.tool_tags|map(attribute='name')|join(', ') }}" placeholder="Runway Gen-3, Midjourney"></div>
+            <div class="field"><label for="skills">Skills (comma-separated)</label><input id="skills" name="skills" value="{{ item.skill_tags|map(attribute='name')|join(', ') }}" placeholder="AI video, Color grading"></div>
+            <div class="field"><label for="commercial_use">Commercial use</label><select id="commercial_use" name="commercial_use">{% for value in ["Not specified", "Organic only", "Paid advertising", "Client-approved commercial use", "Personal / concept work"] %}<option value="{{ value }}" {% if item.commercial_use == value %}selected{% endif %}>{{ value }}</option>{% endfor %}</select></div>
+            <div class="field"><label for="preview_url">Preview image URL (optional)</label><input id="preview_url" name="preview_url" type="url" value="{{ item.preview_url or item.image_url }}" placeholder="https://"></div>
+            <div class="field"><label for="project_url">Project link (optional)</label><input id="project_url" name="project_url" type="url" value="{{ item.project_url }}" placeholder="https://"></div>
+        </div>
+        <div class="field"><label for="description">Project description</label><textarea id="description" name="description" rows="4">{{ item.description }}</textarea></div>
+        <div class="field"><label for="workflow_summary">AI workflow summary</label><textarea id="workflow_summary" name="workflow_summary" rows="5" placeholder="Explain ideation, model use, iteration, human direction, compositing, and finishing.">{{ item.workflow_summary }}</textarea></div>
+        <div class="form-actions"><a class="button button-outline" href="{{ url_for('dashboard') }}">Cancel</a><button class="button" type="submit">Save portfolio item</button></div>
+    </form>
+</section>
+{% endblock %}

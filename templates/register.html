@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Join Creatora AI{% endblock %}
+{% block content %}
+<section class="auth-layout section-wrap">
+    <div class="auth-aside"><span class="eyebrow">YOUR NEXT CHAPTER</span><h1>Bring your<br><span class="text-gradient">good ideas.</span></h1><p class="lead">Join the independent creators and thoughtful brands building what's next.</p></div>
+    <form class="surface-card auth-card" method="post" action="{{ url_for('register') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <span class="eyebrow">COME ON IN</span><h2>Make yourself at home.</h2>
+        <div class="field"><label for="name">Name</label><input id="name" name="name" maxlength="100" autocomplete="name" required></div>
+        <div class="field"><label for="email">Email address</label><input id="email" name="email" type="email" maxlength="255" autocomplete="email" required></div>
+        <div class="field"><label for="role">I'm joining as a</label><select id="role" name="role" required><option value="creator">Creator — I make things</option><option value="brand">Brand — I have a project</option></select></div>
+        <div class="field"><label for="password">Password <span class="muted">(8 characters minimum)</span></label><input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required></div>
+        <button class="button button-full" type="submit">Create your account <span aria-hidden="true">↗</span></button>
+        <p class="form-footnote">We’ll email you a verification link before you can log in.</p>
+        <p class="form-footnote">Already part of the community? <a href="{{ url_for('login') }}">Log in</a></p>
+    </form>
+</section>
+{% endblock %}

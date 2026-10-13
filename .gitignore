@@ -1,0 +1,11 @@
+
+venv/
+.env
+instance/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+.neon
+node_modules/

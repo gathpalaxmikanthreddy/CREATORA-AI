@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Find AI creators | Creatora AI{% endblock %}
+{% block content %}
+<section class="page-intro section-wrap">
+    <span class="eyebrow">THE CREATOR DIRECTORY · DISCOVERY 25%</span>
+    <h1>People who make<br><span class="text-gradient">things happen.</span></h1>
+    <p class="lead">Search real AI filmmakers, animators, and generative artists by the skills, tools, and formats you need.</p>
+</section>
+<section class="section-wrap section-block">
+    <form class="surface-card filters-card" method="get" action="{{ url_for('creators') }}">
+        <div class="field">
+            <label for="creator-search">Search name, bio, or location</label>
+            <input id="creator-search" name="q" type="search" value="{{ selected.q }}" placeholder="Try “cinematic product film”">
+        </div>
+        <div class="filter-grid">
+            <fieldset class="filter-group"><legend>Skills</legend>{% for skill in skills %}<label class="check-option"><input type="checkbox" name="skill" value="{{ skill.name }}" {% if skill.name in selected.skills %}checked{% endif %}><span>{{ skill.name }}</span></label>{% endfor %}{% if not skills %}<span class="muted">Seed profiles to populate</span>{% endif %}</fieldset>
+            <fieldset class="filter-group"><legend>Specialization</legend>{% for item in specializations %}<label class="check-option"><input type="checkbox" name="specialization" value="{{ item.name }}" {% if item.name in selected.specializations %}checked{% endif %}><span>{{ item.name }}</span></label>{% endfor %}{% if not specializations %}<span class="muted">No specializations yet</span>{% endif %}</fieldset>
+            <fieldset class="filter-group"><legend>Tools / models</legend>{% for tool in tools %}<label class="check-option"><input type="checkbox" name="tool" value="{{ tool.name }}" {% if tool.name in selected.tools %}checked{% endif %}><span>{{ tool.name }}</span></label>{% endfor %}{% if not tools %}<span class="muted">No tools listed yet</span>{% endif %}</fieldset>
+            <fieldset class="filter-group"><legend>Content type</legend>{% for item in content_types %}<label class="check-option"><input type="checkbox" name="content_type" value="{{ item.name }}" {% if item.name in selected.content_types %}checked{% endif %}><span>{{ item.name }}</span></label>{% endfor %}{% if not content_types %}<span class="muted">No content types yet</span>{% endif %}</fieldset>
+        </div>
+        <div class="filter-bottom">
+            <div class="field"><label for="location-filter">Location</label><input id="location-filter" name="location" value="{{ selected.location }}" placeholder="Any location"></div>
+            <div class="field"><label for="availability-filter">Availability</label><select id="availability-filter" name="availability"><option value="">Any availability</option>{% for value in ["open", "limited", "unavailable"] %}<option value="{{ value }}" {% if selected.availability == value %}selected{% endif %}>{{ value|humanize_status }}</option>{% endfor %}</select></div>
+            <div class="filter-actions"><button class="button" type="submit">Apply filters</button><a class="button button-outline" href="{{ url_for('creators') }}">Clear filters</a></div>
+        </div>
+    </form>
+    <div class="section-heading results-heading">
+        <div><span class="eyebrow">CREATOR MATCHES · PROFILE & AI PORTFOLIO 30%</span><h2>{{ creators|length }} creator{{ "" if creators|length == 1 else "s" }} found</h2></div>
+        {% if session.get("user_role") == "brand" %}<a class="text-link" href="{{ url_for('new_brief') }}">Post a project ↗</a>{% endif %}
+    </div>
+    {% if creators %}
+        <div class="card-grid creator-grid">
+            {% for profile in creators %}
+                <a class="surface-card creator-card" href="{{ url_for('creator_profile', profile_id=profile.id) }}">
+                    <div class="creator-avatar">{{ profile.display_name[:1]|upper }}</div>
+                    <span class="tag">{{ profile.category }}</span>
+                    <h2>{{ profile.display_name }}</h2>
+                    <p>{{ profile.headline or "Independent creative" }}</p>
+                    <p class="muted">{{ profile.location or "Location not listed" }} · {{ profile.availability|humanize_status }}</p>
+                    <div class="pill-list">{% for item in profile.specializations[:2] %}<span class="tag">{{ item.name }}</span>{% endfor %}{% for item in profile.content_types[:2] %}<span class="tag">{{ item.name }}</span>{% endfor %}</div>
+                    <span class="muted">{{ profile.portfolio_items|length }} portfolio item{{ "" if profile.portfolio_items|length == 1 else "s" }}</span>
+                    <span class="text-link">View profile ↗</span>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state"><span class="empty-icon">⌕</span><h2>No exact matches yet.</h2><p>Try removing a filter or broadening your search to meet more creators.</p><a class="button button-outline" href="{{ url_for('creators') }}">Clear all filters</a></div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if brief else "Create" }} a campaign brief | Creatora AI{% endblock %}
+{% block content %}
+<section class="form-page section-wrap">
+    <a class="back-link" href="{{ url_for('brief_detail', brief_id=brief.id) if brief else url_for('dashboard') }}">← Back</a>
+    <div class="form-heading"><span class="eyebrow">BRAND BRIEF · 20% EVALUATION</span><h1>{{ "Refine your brief." if brief else "Write a project brief." }}</h1><p class="lead">Be clear about the creative goal, audience, deliverables, budget, and intended usage. Licensing details are requirements to discuss, not legal advice.</p></div>
+    {% if errors %}<div class="flash flash-error" role="alert"><strong>Please review:</strong><ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul></div>{% endif %}
+    <form class="surface-card form-card" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-section-heading"><span class="eyebrow">THE CREATIVE IDEA</span></div>
+        <div class="field-grid">
+            <div class="field"><label for="title">Campaign title *</label><input id="title" name="title" value="{{ values.title }}" maxlength="180" required></div>
+            <div class="field"><label for="audience">Who is it for? *</label><input id="audience" name="audience" value="{{ values.audience }}" maxlength="300" required placeholder="Audience, community, or customer"></div>
+        </div>
+        <div class="field"><label for="goal">Campaign goal *</label><textarea id="goal" name="goal" rows="3" required>{{ values.goal }}</textarea></div>
+        <div class="field"><label for="description">Campaign description *</label><textarea id="description" name="description" rows="5" required>{{ values.description }}</textarea></div>
+        <div class="field"><label for="requirements">Requirements and context</label><textarea id="requirements" name="requirements" rows="3">{{ values.requirements }}</textarea></div>
+        <div class="field-grid">
+            <div class="field"><label for="content_type">Content type *</label><select id="content_type" name="content_type" required>{% for item in content_types %}<option value="{{ item.name|lower }}" {% if values.content_type|lower == item.name|lower %}selected{% endif %}>{{ item.name }}</option>{% endfor %}{% for name in ["video", "animation", "image", "graphics", "audio", "other"] %}{% if name not in content_types|map(attribute="name")|map("lower")|list %}<option value="{{ name }}" {% if values.content_type|lower == name %}selected{% endif %}>{{ name|title }}</option>{% endif %}{% endfor %}</select></div>
+            <div class="field"><label for="category">Category</label><input id="category" name="category" value="{{ values.category }}" maxlength="80"></div>
+            <div class="field"><label for="style">Style / creative direction</label><input id="style" name="style" value="{{ values.style }}" maxlength="300" placeholder="Cinematic, playful, minimal..."></div>
+            <div class="field"><label for="deliverables">Deliverables *</label><input id="deliverables" name="deliverables" value="{{ values.deliverables }}" required placeholder="Hero film, cutdowns, stills"></div>
+            <div class="field"><label for="format">Platform / dimensions</label><input id="format" name="format" value="{{ values.format }}" maxlength="100" placeholder="Instagram, 1080 × 1920"></div>
+            <div class="field"><label for="aspect_ratio">Aspect ratio</label><input id="aspect_ratio" name="aspect_ratio" value="{{ values.aspect_ratio }}" maxlength="30" placeholder="9:16"></div>
+            <div class="field"><label for="duration">Duration</label><input id="duration" name="duration" value="{{ values.duration }}" maxlength="80" placeholder="15–30 seconds"></div>
+            <div class="field"><label for="quantity">Quantity *</label><input id="quantity" name="quantity" type="number" min="1" value="{{ values.quantity }}" required></div>
+            <div class="field"><label for="budget">Total budget (₹) *</label><input id="budget" name="budget" type="number" min="0" step="1" value="{{ values.budget }}" required></div>
+            <div class="field"><label for="timeline">Timeline</label><input id="timeline" name="timeline" value="{{ values.timeline }}" maxlength="120" placeholder="Three weeks from kickoff"></div>
+            <div class="field"><label for="deadline">Deadline</label><input id="deadline" name="deadline" type="date" value="{{ values.deadline.strftime('%Y-%m-%d') if values.deadline.strftime is defined else values.deadline }}"></div>
+            <div class="field"><label for="specializations">Preferred specialization(s)</label><input id="specializations" name="specializations" value="{{ values.specializations }}" placeholder="AI Filmmaking, Generative Art"></div>
+            <div class="field"><label for="skills">Required skills</label><input id="skills" name="skills" value="{{ values.skills }}" placeholder="Compositing, Art direction"></div>
+            <div class="field"><label for="tools">Preferred tools / models</label><input id="tools" name="tools" value="{{ values.tools }}" placeholder="Runway, Midjourney"></div>
+        </div>
+        <div class="form-section-heading"><span class="eyebrow">COMMERCIAL USE & LICENSING REQUIREMENTS</span></div>
+        <div class="field-grid">
+            <div class="field"><label for="commercial_use">Usage type</label><select id="commercial_use" name="commercial_use">{% for value, label in [("organic_only", "Organic use only"), ("paid_ads", "Paid advertising"), ("organic_and_paid", "Organic and paid advertising"), ("internal", "Internal use only"), ("custom", "Custom — discuss with creator")] %}<option value="{{ value }}" {% if values.commercial_use == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+            <div class="field"><label for="usage_duration">Usage term</label><input id="usage_duration" name="usage_duration" value="{{ values.usage_duration }}" maxlength="80" placeholder="12 months"></div>
+            <div class="field"><label for="territory">Territory</label><input id="territory" name="territory" value="{{ values.territory }}" maxlength="100" placeholder="India, worldwide"></div>
+            <div class="field"><label for="exclusivity">Exclusivity</label><select id="exclusivity" name="exclusivity">{% for value, label in [("none", "No exclusivity"), ("category", "Category exclusivity"), ("full", "Full exclusivity"), ("custom", "Custom — discuss with creator")] %}<option value="{{ value }}" {% if values.exclusivity == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        </div>
+        <label class="check-option check-large"><input type="checkbox" name="allow_edits" value="yes" {% if values.allow_edits %}checked{% endif %}><span>Brand may edit or repurpose final deliverables, as agreed with creator.</span></label>
+        <p class="legal-note">These fields describe the requested usage scope. They are not legal advice and do not replace a written agreement.</p>
+        <div class="form-actions">
+            <a class="button button-outline" href="{{ url_for('dashboard') }}">Cancel</a>
+            <button class="button button-outline" type="submit" name="publish" value="no">Save draft</button>
+            <button class="button" type="submit" name="publish" value="yes">Publish brief ↗</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

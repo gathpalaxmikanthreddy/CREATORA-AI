@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Verify your email | Creatora AI{% endblock %}
+{% block content %}
+<section class="auth-layout section-wrap">
+    <div class="auth-aside"><span class="eyebrow">ONE LAST STEP</span><h1>Confirm your<br><span class="text-gradient">email address.</span></h1><p class="lead">Confirm this address to activate your Creatora AI account.</p></div>
+    <form class="surface-card auth-card" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="token" value="{{ token }}">
+        <span class="eyebrow">EMAIL VERIFICATION</span><h2>Ready to confirm?</h2>
+        <p class="muted">This link expires after {{ expiry_hours }} hours. If you did not create this account, you can ignore it.</p>
+        <button class="button button-full" type="submit">Verify email <span aria-hidden="true">↗</span></button>
+        <p class="form-footnote"><a href="{{ url_for('login') }}">Back to log in</a></p>
+    </form>
+</section>
+{% endblock %}

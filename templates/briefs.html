@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Open briefs | Creatora AI{% endblock %}
+{% block content %}
+<section class="page-intro section-wrap">
+    <span class="eyebrow">BRAND BRIEFS · DEFINITION 20%</span>
+    <h1>Good work starts<br><span class="text-gradient">with a good brief.</span></h1>
+    <p class="lead">Browse open creative opportunities with clear deliverables, budgets, and licensing needs.</p>
+</section>
+<section class="section-wrap section-block">
+    <div class="section-heading"><div><span class="eyebrow">CREATIVE OPPORTUNITIES</span><h2>{{ briefs|length }} {{ status|humanize_status }} brief{{ "" if briefs|length == 1 else "s" }}</h2></div>
+    <div class="filter-actions"><a class="button button-small {{ 'button-outline' if status != 'open' else '' }}" href="{{ url_for('briefs', status='open') }}">Open</a><a class="button button-small button-outline" href="{{ url_for('briefs', status='paused') }}">Paused</a>{% if session.get("user_role") == "brand" %}<a class="button button-small" href="{{ url_for('new_brief') }}">Create a brief</a>{% endif %}</div></div>
+    {% if briefs %}<div class="card-grid">{% for brief in briefs %}
+        <a class="surface-card brief-card" href="{{ url_for('brief_detail', brief_id=brief.id) }}">
+            <div class="card-topline"><span class="tag">{{ brief.content_type|title }}</span><span class="availability"><span class="status-dot"></span>{{ brief.status|humanize_status }}</span></div>
+            <h3>{{ brief.title }}</h3><p>{{ brief.goal|truncate(130) if brief.goal else brief.description|truncate(130) }}</p>
+            <div class="pill-list">{% for skill in brief.required_skills[:2] %}<span class="tag">{{ skill.name }}</span>{% endfor %}</div>
+            <div class="card-meta"><span>{{ brief.brand.name }} · {{ brief.format or brief.aspect_ratio or "Digital" }}</span><strong>{{ brief.budget|currency }}</strong></div>
+        </a>
+    {% endfor %}</div>{% else %}
+        <div class="empty-state"><span class="empty-icon">✳</span><h2>No {{ status }} briefs just yet.</h2><p>Check another status or come back when brands publish their next project.</p>{% if session.get("user_role") == "brand" %}<a class="button" href="{{ url_for('new_brief') }}">Create a brief</a>{% endif %}</div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.display_name }} | Creatora AI{% endblock %}
+{% block content %}
+<section class="section-wrap profile-layout">
+    <a class="back-link" href="{{ url_for('creators') }}">← All creators</a>
+    <article class="surface-card profile-card">
+        <header class="profile-heading">
+            <div class="creator-avatar creator-avatar-large">{{ profile.display_name[:1]|upper }}</div>
+            <div>
+                <span class="tag">{{ profile.category }}</span>
+                <h1>{{ profile.display_name }}</h1>
+                <p class="lead">{{ profile.headline or "Independent creative" }}</p>
+                <p class="muted">{{ profile.location or "Location not listed" }} · {{ profile.availability|humanize_status }}</p>
+            </div>
+            {% if session.get("user_id") == profile.user_id %}
+                <a class="button button-outline" href="{{ url_for('edit_profile') }}">Edit profile</a>
+            {% endif %}
+        </header>
+        {% if profile.bio %}
+            <div class="profile-section"><span class="eyebrow">ABOUT</span><p>{{ profile.bio }}</p></div>
+        {% else %}
+            <div class="profile-section"><span class="eyebrow">ABOUT</span><p class="muted">This creator is still writing their introduction.</p></div>
+        {% endif %}
+        <div class="profile-section">
+            <span class="eyebrow">SPECIALIZATIONS & CONTENT</span>
+            <div class="pill-list">{% for tag in profile.specializations %}<span class="tag">{{ tag.name }}</span>{% endfor %}{% for tag in profile.content_types %}<span class="tag">{{ tag.name }}</span>{% endfor %}{% if not profile.specializations and not profile.content_types %}<span class="muted">No specializations or content types listed yet.</span>{% endif %}</div>
+        </div>
+        <div class="profile-section">
+            <span class="eyebrow">SKILLS</span>
+            <div class="pill-list">{% for tag in profile.skill_tags %}<span class="tag">{{ tag.name }}</span>{% endfor %}{% if not profile.skill_tags and profile.skills %}{% for skill in profile.skills.split(",") %}<span class="tag">{{ skill.strip() }}</span>{% endfor %}{% elif not profile.skill_tags %}<span class="muted">No skills listed yet.</span>{% endif %}</div>
+        </div>
+        <div class="profile-section">
+            <span class="eyebrow">TOOLS & MODELS</span>
+            <div class="pill-list">{% for tag in profile.tool_tags %}<span class="tag">{{ tag.name }}</span>{% endfor %}{% if not profile.tool_tags and profile.tools %}{% for tool in profile.tools.split(",") %}<span class="tag">{{ tool.strip() }}</span>{% endfor %}{% elif not profile.tool_tags %}<span class="muted">No tools listed yet.</span>{% endif %}</div>
+            {% for record in profile.verification_records if record.claim_type == "tools" %}
+                <p class="verification verification-{{ record.status }}"><strong>{{ record.status|humanize_status }}</strong> · Tools claim{% if record.evidence_note %} — {{ record.evidence_note }}{% endif %}{% if record.is_demo %}<span class="demo-label">Demo sample</span>{% endif %}</p>
+            {% else %}<p class="verification verification-unverified"><strong>Unverified</strong> · Tool names are creator-provided, not independently confirmed.</p>{% endfor %}
+        </div>
+        {% if profile.profile_url %}
+            <div class="profile-section"><span class="eyebrow">ELSEWHERE</span><a class="text-link" href="{{ profile.profile_url }}" target="_blank" rel="noopener noreferrer">Visit creator link ↗</a></div>
+        {% endif %}
+        <div class="profile-section profile-rate"><span class="eyebrow">STARTING AT</span><strong>{{ profile.starting_price|currency }}</strong></div>
+        <div class="profile-section">
+            <div class="section-heading"><div><span class="eyebrow">AI-NATIVE PORTFOLIO · 30% EVALUATION</span><h2>Selected work</h2></div>{% if session.get("user_id") == profile.user_id %}<a class="button button-small" href="{{ url_for('new_portfolio_item') }}">Add work</a>{% endif %}</div>
+            {% if profile.portfolio_items %}
+                <div class="portfolio-grid">{% for item in profile.portfolio_items %}
+                    <a class="portfolio-item" href="{{ url_for('portfolio_detail', item_id=item.id) }}">
+                        <span class="tag">{{ item.media_type|title }}{% if item.year %} · {{ item.year }}{% endif %}</span>
+                        <h3>{{ item.title }}</h3><p>{{ item.description|truncate(110) if item.description else "Explore this creator's AI-assisted project." }}</p>
+                        <div class="pill-list">{% for tool in item.tool_tags[:3] %}<span class="tag">{{ tool.name }}</span>{% endfor %}</div>
+                        <span class="text-link">View workflow & details ↗</span>
+                    </a>
+                {% endfor %}</div>
+            {% else %}
+                <div class="empty-state compact"><p>No portfolio projects published yet.</p>{% if session.get("user_id") == profile.user_id %}<a class="text-link" href="{{ url_for('new_portfolio_item') }}">Add your first project ↗</a>{% endif %}</div>
+            {% endif %}
+        </div>
+    </article>
+</section>
+{% endblock %}

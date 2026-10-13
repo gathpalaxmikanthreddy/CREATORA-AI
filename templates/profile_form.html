@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Edit creator profile | Creatora AI{% endblock %}
+{% block content %}
+<section class="form-page section-wrap">
+    <a class="back-link" href="{{ url_for('creator_profile', profile_id=profile.id) }}">← Back to profile</a>
+    <div class="form-heading"><span class="eyebrow">YOUR CREATOR PROFILE</span><h1>Tell your story.</h1><p class="lead">Tags are comma-separated and saved as normalized records so brands can filter accurately.</p></div>
+    <form class="surface-card form-card" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field-grid">
+            <div class="field"><label for="display_name">Display name</label><input id="display_name" name="display_name" value="{{ profile.display_name }}" maxlength="100" required></div>
+            <div class="field"><label for="headline">Headline</label><input id="headline" name="headline" value="{{ profile.headline }}" maxlength="180" placeholder="AI filmmaker creating cinematic brand stories"></div>
+            <div class="field"><label for="location">Location</label><input id="location" name="location" value="{{ profile.location }}" maxlength="100"></div>
+            <div class="field"><label for="availability">Availability</label><select id="availability" name="availability">{% for value in ["open", "limited", "unavailable"] %}<option value="{{ value }}" {% if profile.availability == value %}selected{% endif %}>{{ value|humanize_status }}</option>{% endfor %}</select></div>
+            <div class="field"><label for="category">Primary specialization</label><input id="category" name="category" value="{{ profile.category }}" maxlength="80"></div>
+            <div class="field"><label for="starting_price">Starting price (₹)</label><input id="starting_price" name="starting_price" type="number" min="0" value="{{ profile.starting_price }}"></div>
+            <div class="field"><label for="specializations">Specializations</label><input id="specializations" name="specializations" value="{{ profile.specializations|map(attribute='name')|join(', ') }}" placeholder="AI Filmmaking, Generative Art"></div>
+            <div class="field"><label for="content_types">Content types</label><input id="content_types" name="content_types" value="{{ profile.content_types|map(attribute='name')|join(', ') }}" placeholder="Video, Animation, Image"></div>
+            <div class="field"><label for="skills">Skills</label><input id="skills" name="skills" value="{{ profile.skill_tags|map(attribute='name')|join(', ') or profile.skills }}" placeholder="Art direction, Compositing"></div>
+            <div class="field"><label for="tools">Tools / models</label><input id="tools" name="tools" value="{{ profile.tool_tags|map(attribute='name')|join(', ') or profile.tools }}" placeholder="Runway, Midjourney"></div>
+        </div>
+        <div class="field"><label for="bio">Biography</label><textarea id="bio" name="bio" rows="6">{{ profile.bio }}</textarea></div>
+        <div class="field"><label for="profile_url">Link to your external work (optional)</label><input id="profile_url" name="profile_url" type="url" value="{{ profile.profile_url }}" placeholder="https://"></div>
+        <div class="form-actions"><a class="button button-outline" href="{{ url_for('creator_profile', profile_id=profile.id) }}">Cancel</a><button class="button" type="submit">Save profile</button></div>
+    </form>
+</section>
+{% endblock %}

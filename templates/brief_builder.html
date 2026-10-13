@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}AI brief builder | Creatora AI{% endblock %}
+{% block content %}
+<section class="form-page section-wrap">
+    <a class="back-link" href="{{ url_for('dashboard') }}">← Back to dashboard</a>
+    <div class="form-heading"><span class="eyebrow">OPTIONAL AI BONUS · NO API KEY REQUIRED</span><h1>Start with a rough idea.</h1><p class="lead">A local rules-based helper suggests a structured brief. It is not an AI model and every suggested field remains editable.</p></div>
+    {% if not values %}
+        <form class="surface-card form-card" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field"><label for="idea">What's the campaign idea?</label><textarea id="idea" name="idea" rows="5" maxlength="3000" required placeholder="We need a playful short video introducing our new plant-based iced coffee to young urban professionals."></textarea></div>
+            <button class="button" type="submit">Suggest a brief structure ↗</button>
+        </form>
+    {% else %}
+        <div class="flash flash-success">Suggested draft — generated locally from your idea; review and edit all fields before saving or publishing.</div>
+        <form class="surface-card form-card" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="save" value="yes">
+            <input type="hidden" name="idea" value="{{ idea }}">
+            <div class="field-grid">
+                <div class="field"><label for="title">Campaign title</label><input id="title" name="title" value="{{ values.title }}" maxlength="180" required></div>
+                <div class="field"><label for="audience">Audience</label><input id="audience" name="audience" value="{{ values.audience }}" maxlength="300" required></div>
+                <div class="field"><label for="content_type">Content type</label><select id="content_type" name="content_type">{% for name in ["video", "animation", "image", "graphics", "audio", "other"] %}<option value="{{ name }}" {% if values.content_type == name %}selected{% endif %}>{{ name|title }}</option>{% endfor %}</select></div>
+                <div class="field"><label for="category">Category</label><input id="category" name="category" value="{{ values.category }}"></div>
+                <div class="field"><label for="style">Style</label><input id="style" name="style" value="{{ values.style }}"></div>
+                <div class="field"><label for="deliverables">Deliverables</label><input id="deliverables" name="deliverables" value="{{ values.deliverables }}" required></div>
+                <div class="field"><label for="format">Platform / format</label><input id="format" name="format" value="{{ values.format }}"></div>
+                <div class="field"><label for="aspect_ratio">Aspect ratio</label><input id="aspect_ratio" name="aspect_ratio" value="{{ values.aspect_ratio }}"></div>
+                <div class="field"><label for="duration">Duration</label><input id="duration" name="duration" value="{{ values.duration }}"></div>
+                <div class="field"><label for="quantity">Quantity</label><input id="quantity" name="quantity" type="number" min="1" value="{{ values.quantity }}"></div>
+                <div class="field"><label for="budget">Budget (₹)</label><input id="budget" name="budget" type="number" min="0" value="{{ values.budget }}"></div>
+                <div class="field"><label for="timeline">Timeline</label><input id="timeline" name="timeline" value="{{ values.timeline }}"></div>
+                <div class="field"><label for="deadline">Deadline</label><input id="deadline" name="deadline" type="date" value="{{ values.deadline }}"></div>
+                <div class="field"><label for="commercial_use">Commercial use</label><select id="commercial_use" name="commercial_use">{% for value,label in [("organic_only","Organic only"),("paid_ads","Paid advertising"),("organic_and_paid","Organic and paid"),("internal","Internal"),("custom","Custom")] %}<option value="{{ value }}" {% if values.commercial_use == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                <div class="field"><label for="usage_duration">Usage term</label><input id="usage_duration" name="usage_duration" value="{{ values.usage_duration }}"></div>
+                <div class="field"><label for="territory">Territory</label><input id="territory" name="territory" value="{{ values.territory }}"></div>
+                <div class="field"><label for="exclusivity">Exclusivity</label><select id="exclusivity" name="exclusivity">{% for value,label in [("none","None"),("category","Category"),("full","Full"),("custom","Custom")] %}<option value="{{ value }}" {% if values.exclusivity == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                <div class="field"><label for="specializations">Specializations</label><input id="specializations" name="specializations" value="{{ values.specializations }}"></div>
+                <div class="field"><label for="skills">Skills</label><input id="skills" name="skills" value="{{ values.skills }}"></div>
+                <div class="field"><label for="tools">Preferred tools / models</label><input id="tools" name="tools" value="{{ values.tools }}"></div>
+            </div>
+            <div class="field"><label for="goal">Goal</label><textarea id="goal" name="goal" rows="3" required>{{ values.goal }}</textarea></div>
+            <div class="field"><label for="description">Campaign description</label><textarea id="description" name="description" rows="4" required>{{ values.description }}</textarea></div>
+            <div class="field"><label for="requirements">Requirements</label><textarea id="requirements" name="requirements" rows="3">{{ values.requirements }}</textarea></div>
+            <label class="check-option check-large"><input type="checkbox" name="allow_edits" value="yes"><span>Brand may edit or repurpose deliverables, as agreed.</span></label>
+            <p class="legal-note">The local helper made suggestions, not factual claims. Licensing details are not legal advice.</p>
+            <div class="form-actions"><a class="button button-outline" href="{{ url_for('brief_builder') }}">Start over</a><button class="button button-outline" type="submit" name="publish" value="no">Save as draft</button><button class="button" type="submit" name="publish" value="yes">Publish brief ↗</button></div>
+        </form>
+    {% endif %}
+</section>
+{% endblock %}

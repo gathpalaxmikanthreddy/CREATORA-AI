@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} | AI Portfolio | Creatora AI{% endblock %}
+{% block content %}
+<section class="section-wrap profile-layout">
+    <a class="back-link" href="{{ url_for('creator_profile', profile_id=item.creator_profile_id) }}">← {{ item.creator_profile.display_name }}'s profile</a>
+    <article class="surface-card profile-card">
+        {% if item.media_type|lower in ["video", "animation"] and item.project_url|direct_video_url %}
+            <video class="portfolio-preview" src="{{ item.project_url }}" controls preload="metadata" aria-label="Video portfolio work: {{ item.title }}"{% if item.preview_url or item.image_url %} poster="{{ item.preview_url or item.image_url }}"{% endif %}></video>
+        {% elif item.preview_url or item.image_url %}
+            <img class="portfolio-preview" src="{{ item.preview_url or item.image_url }}" alt="Preview for {{ item.title }}" loading="lazy">
+        {% endif %}
+        <span class="tag">{{ item.media_type|title }}{% if item.year %} · {{ item.year }}{% endif %}</span>
+        {% if item.specialization %}<span class="tag">{{ item.specialization }}</span>{% endif %}
+        <h1 class="portfolio-title">{{ item.title }}</h1>
+        <p class="lead">{{ item.description or "AI-assisted creative project." }}</p>
+        <div class="portfolio-meta">
+            <div><span class="eyebrow">CREATOR ROLE</span><p>{{ item.project_role or "Not specified" }}</p></div>
+            <div><span class="eyebrow">FORMAT</span><p>{{ item.format or "Not specified" }}{% if item.aspect_ratio %} · {{ item.aspect_ratio }}{% endif %}</p></div>
+            <div><span class="eyebrow">COMMERCIAL USE</span><p>{{ item.commercial_use or "Not specified" }}</p></div>
+        </div>
+        <div class="profile-section"><span class="eyebrow">AI WORKFLOW</span><p>{{ item.workflow_summary or "Workflow details have not been provided." }}</p>
+            {% set workflow_records = item.verification_records|selectattr("claim_type", "equalto", "workflow")|list %}
+            {% if workflow_records %}{% for record in workflow_records %}<p class="verification verification-{{ record.status }}"><strong>{{ record.status|humanize_status }}</strong> · Workflow claim{% if record.evidence_note %} — {{ record.evidence_note }}{% endif %}{% if record.is_demo %}<span class="demo-label">Demo sample</span>{% endif %}</p>{% endfor %}{% else %}<p class="verification verification-unverified"><strong>Unverified</strong> · Workflow is creator-provided.</p>{% endif %}
+        </div>
+        {% set past_work_records = item.verification_records|selectattr("claim_type", "equalto", "past_work")|list %}
+        {% if past_work_records %}<div class="profile-section"><span class="eyebrow">PAST WORK SIGNAL</span>{% for record in past_work_records %}<p class="verification verification-{{ record.status }}"><strong>{{ record.status|humanize_status }}</strong> · Past-work claim{% if record.evidence_note %} — {{ record.evidence_note }}{% endif %}{% if record.is_demo %}<span class="demo-label">Demo sample</span>{% endif %}</p>{% endfor %}</div>{% endif %}
+        <div class="profile-section"><span class="eyebrow">TOOLS & MODELS</span><div class="pill-list">{% for tool in item.tool_tags %}<span class="tag">{{ tool.name }}</span>{% endfor %}{% if not item.tool_tags %}<span class="muted">No tools listed.</span>{% endif %}</div></div>
+        <div class="profile-section"><span class="eyebrow">SKILLS</span><div class="pill-list">{% for skill in item.skill_tags %}<span class="tag">{{ skill.name }}</span>{% endfor %}{% if not item.skill_tags %}<span class="muted">No skills listed.</span>{% endif %}</div></div>
+        {% if item.project_url %}<a class="button" href="{{ item.project_url }}" target="_blank" rel="noopener noreferrer">View project ↗</a>{% endif %}
+        {% if session.get("user_id") == item.creator_profile.user_id %}<a class="button button-outline" href="{{ url_for('edit_portfolio_item', item_id=item.id) }}">Edit item</a>{% endif %}
+    </article>
+</section>
+{% endblock %}

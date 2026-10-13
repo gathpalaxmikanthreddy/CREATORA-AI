@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Request expired | Creatora AI{% endblock %}
+{% block content %}
+<section class="empty-state section-wrap error-page">
+    <span class="empty-icon">↻</span>
+    <h1>This form could not be verified.</h1>
+    <p>For your security, the form token may have expired. Go back, refresh the page, and try again.</p>
+    <a class="button" href="{{ url_for('home') }}">Back to Creatora</a>
+</section>
+{% endblock %}

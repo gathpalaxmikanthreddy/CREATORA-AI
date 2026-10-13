@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f5ef">
+    <title>{% block title %}Creatora AI{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="{{ url_for('home') }}" aria-label="Creatora AI home">
+            <span class="brand-mark">C</span>
+            <span>creatora<span class="brand-accent">.ai</span></span>
+        </a>
+        <nav class="nav-links" id="primary-nav" aria-label="Main navigation">
+            <a href="{{ url_for('creators') }}">Find creators</a>
+            <a href="{{ url_for('briefs') }}">Opportunities</a>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                {% if session.get('user_role') == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+                {% endif %}
+                <form method="post" action="{{ url_for('logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="button button-small button-outline" type="submit">Log out</button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('login') }}">Log in</a>
+                <a href="{{ url_for('admin_login') }}">Admin login</a>
+                <a class="button button-small" href="{{ url_for('register') }}">Join Creatora</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-stack" role="status" aria-live="polite">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}" data-flash-message>
+                        <span>{{ message }}</span>
+                        <button class="flash-dismiss" type="button" aria-label="Dismiss notification">×</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <a class="brand brand-footer" href="{{ url_for('home') }}">
+            <span class="brand-mark">C</span>
+            <span>creatora<span class="brand-accent">.ai</span></span>
+        </a>
+        <p>Creative minds. Meaningful work.</p>
+        <span>© 2026 Creatora AI</span>
+    </footer>
+</body>
+</html>

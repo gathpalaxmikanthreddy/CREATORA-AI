@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ brief.title }} | Creatora AI{% endblock %}
+{% block content %}
+<section class="section-wrap profile-layout">
+    <a class="back-link" href="{{ url_for('briefs') }}">← All briefs</a>
+    <article class="surface-card profile-card">
+        <div class="card-topline"><span class="tag">{{ brief.content_type|title }} · {{ brief.category }}</span><span class="availability">{{ brief.status|humanize_status }}</span></div>
+        <span class="eyebrow brief-brand-label">{{ brief.brand.name }} · CAMPAIGN BRIEF</span>
+        <h1 class="portfolio-title">{{ brief.title }}</h1>
+        {% if brief.goal %}<div class="profile-section"><span class="eyebrow">CAMPAIGN GOAL</span><p>{{ brief.goal }}</p></div>{% endif %}
+        {% if brief.audience %}<div class="profile-section"><span class="eyebrow">AUDIENCE</span><p>{{ brief.audience }}</p></div>{% endif %}
+        <div class="profile-section"><span class="eyebrow">THE BRIEF</span><p>{{ brief.description }}</p></div>
+        {% if brief.requirements %}<div class="profile-section"><span class="eyebrow">REQUIREMENTS</span><p>{{ brief.requirements }}</p></div>{% endif %}
+        <div class="portfolio-meta">
+            <div><span class="eyebrow">STYLE</span><p>{{ brief.style or "Open to creator direction" }}</p></div>
+            <div><span class="eyebrow">DELIVERABLES</span><p>{{ brief.quantity }} × {{ brief.deliverables }}</p></div>
+            <div><span class="eyebrow">FORMAT / DURATION</span><p>{{ brief.format or brief.aspect_ratio or "Agreed with creator" }}{% if brief.aspect_ratio and brief.format %} · {{ brief.aspect_ratio }}{% endif %}{% if brief.duration %} · {{ brief.duration }}{% endif %}</p></div>
+            <div><span class="eyebrow">BUDGET</span><p>{{ brief.budget|currency }}</p></div>
+            <div><span class="eyebrow">TIMELINE / DEADLINE</span><p>{{ brief.timeline or "To be agreed" }}{% if brief.deadline %} · {{ brief.deadline.strftime("%b %d, %Y") }}{% endif %}</p></div>
+            <div><span class="eyebrow">COMMERCIAL USE</span><p>{{ brief.commercial_use|humanize_status }} · {{ brief.usage_duration or "Term to agree" }} · {{ brief.territory or "Territory to agree" }}</p></div>
+            <div><span class="eyebrow">EXCLUSIVITY / EDITS</span><p>{{ brief.exclusivity|humanize_status }} · Brand editing {{ "allowed" if brief.allow_edits else "not specified" }}</p></div>
+        </div>
+        <p class="legal-note">Usage and licensing fields summarize the brand's brief requirements; they are not legal advice. Final rights should be agreed by the parties.</p>
+        {% if brief.required_skills or brief.required_specializations or brief.preferred_tools %}
+            <div class="profile-section"><span class="eyebrow">PREFERRED MATCH</span><div class="pill-list">{% for item in brief.required_skills %}<span class="tag">{{ item.name }}</span>{% endfor %}{% for item in brief.required_specializations %}<span class="tag">{{ item.name }}</span>{% endfor %}{% for item in brief.preferred_tools %}<span class="tag">{{ item.name }}</span>{% endfor %}</div></div>
+        {% endif %}
+        {% if session.get("user_id") == brief.brand_id and session.get("user_role") == "brand" %}
+            <div class="form-actions">
+                <a class="button button-outline" href="{{ url_for('edit_brief', brief_id=brief.id) }}">Edit brief</a>
+                <a class="button button-outline" href="{{ url_for('brief_applications', brief_id=brief.id) }}">Review applications</a>
+                {% if brief.status in ["draft", "paused"] %}<form method="post" action="{{ url_for('change_brief_status', brief_id=brief.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="status" value="open"><button class="button" type="submit">Publish / reopen</button></form>{% endif %}
+                {% if brief.status == "open" %}<form method="post" action="{{ url_for('change_brief_status', brief_id=brief.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="status" value="paused"><button class="button button-outline" type="submit">Pause</button></form>{% endif %}
+                {% if brief.status in ["open", "paused"] %}<form method="post" action="{{ url_for('change_brief_status', brief_id=brief.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="status" value="closed"><button class="button button-outline" type="submit">Close brief</button></form>{% endif %}
+                {% if brief.status == "closed" %}<form method="post" action="{{ url_for('change_brief_status', brief_id=brief.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="status" value="completed"><button class="button" type="submit">Mark completed</button></form>{% endif %}
+            </div>
+        {% elif session.get("user_role") == "creator" %}
+            {% if existing_application %}
+                <p class="flash flash-success">Application status: {{ existing_application.status|humanize_status }}{% if existing_application.engagement %} · <a class="text-link" href="{{ url_for('engagement_detail', engagement_id=existing_application.engagement.id) }}">View engagement ↗</a>{% endif %}</p>
+            {% elif brief.status == "open" %}
+                <form class="application-form" method="post" action="{{ url_for('apply_to_brief', brief_id=brief.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="field"><label for="message">Your proposal (optional)</label><textarea id="message" name="message" rows="4" maxlength="5000" placeholder="Tell the brand how you'd approach this brief."></textarea></div><button class="button" type="submit">Apply to this brief</button></form>
+            {% endif %}
+        {% elif not session.get("user_id") and brief.status == "open" %}
+            <a class="button" href="{{ url_for('login', next=request.path) }}">Log in to apply</a>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard | Creatora AI{% endblock %}
+{% block content %}
+<section class="section-wrap dashboard-page admin-page">
+    <div class="dashboard-welcome">
+        <div><span class="eyebrow">CREATORA ADMINISTRATION</span><h1>Platform overview.</h1><p class="lead">Account and marketplace activity at a glance.</p></div>
+        <div class="welcome-stamp"><span>✳</span><small>Admin workspace</small></div>
+    </div>
+    <section class="dashboard-stats" aria-label="Platform statistics">
+        <article class="surface-card stat-card"><span class="eyebrow">TOTAL USERS</span><strong>{{ stats.users }}</strong></article>
+        <article class="surface-card stat-card"><span class="eyebrow">ACTIVE USERS</span><strong>{{ stats.active_users }}</strong></article>
+        <article class="surface-card stat-card"><span class="eyebrow">CREATORS</span><strong>{{ stats.creators }}</strong></article>
+        <article class="surface-card stat-card"><span class="eyebrow">BRANDS</span><strong>{{ stats.brands }}</strong></article>
+        <article class="surface-card stat-card"><span class="eyebrow">OPEN BRIEFS</span><strong>{{ stats.open_briefs }}</strong></article>
+        <article class="surface-card stat-card"><span class="eyebrow">APPLICATIONS</span><strong>{{ stats.applications }}</strong></article>
+    </section>
+    <section class="dashboard-section">
+        <div class="section-heading"><div><span class="eyebrow">ACCOUNT DIRECTORY</span><h2>Marketplace users</h2></div></div>
+        <form class="surface-card admin-filters" method="get" action="{{ url_for('admin_dashboard') }}">
+            <div class="field"><label for="admin-search">Search name or email</label><input id="admin-search" name="q" type="search" value="{{ search }}" placeholder="Search accounts"></div>
+            <div class="field"><label for="admin-role">Account role</label><select id="admin-role" name="role"><option value="">All roles</option>{% for value in ["creator", "brand", "admin"] %}<option value="{{ value }}" {% if role_filter == value %}selected{% endif %}>{{ value|title }}</option>{% endfor %}</select></div>
+            <div class="filter-actions"><button class="button button-small" type="submit">Search</button><a class="button button-small button-outline" href="{{ url_for('admin_dashboard') }}">Clear</a></div>
+        </form>
+        {% if users.items %}
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Email verified</th><th>Joined</th></tr></thead>
+                    <tbody>{% for member in users.items %}
+                        <tr><td>{{ member.name }}</td><td>{{ member.email }}</td><td>{{ member.role|title }}</td><td>{{ "Active" if member.is_active else "Inactive" }}</td><td>{{ "Yes" if member.email_verified else "No" }}</td><td>{{ member.created_at.strftime("%b %d, %Y") if member.created_at else "—" }}</td></tr>
+                    {% endfor %}</tbody>
+                </table>
+            </div>
+            <nav class="admin-pagination" aria-label="User directory pages">
+                {% if users.has_prev %}<a class="button button-small button-outline" href="{{ url_for('admin_dashboard', q=search, role=role_filter, page=users.prev_num) }}">← Previous</a>{% endif %}
+                <span>Page {{ users.page }} of {{ users.pages }}</span>
+                {% if users.has_next %}<a class="button button-small button-outline" href="{{ url_for('admin_dashboard', q=search, role=role_filter, page=users.next_num) }}">Next →</a>{% endif %}
+            </nav>
+        {% else %}
+            <div class="empty-state"><h2>No accounts found.</h2><p>Try a broader search or clear the filters.</p></div>
+        {% endif %}
+    </section>
+</section>
+{% endblock %}
