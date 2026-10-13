@@ -132,6 +132,13 @@ app.config["SUPABASE_AUTH_ENABLED"] = bool(
     app.config["SUPABASE_URL"] and app.config["SUPABASE_KEY"]
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+    "connect_args": {
+        "connect_timeout": 10,
+    },
+}
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.getenv("COOKIE_SECURE", "0") == "1"
@@ -2004,7 +2011,18 @@ register_seed_command(app)
 
 
 with app.app_context():
-    initialize_database()
+    try:
+        initialize_database()
+        print("[startup] Database initialized successfully.")
+    except Exception as _db_init_err:
+        # Log safely without leaking credentials
+        print(
+            f"[startup] WARNING: Could not initialize database: "
+            f"{type(_db_init_err).__name__}: {_db_init_err}\n"
+            f"  The app will start, but tables may not exist yet.\n"
+            f"  Check DATABASE_URL, network access, and that the "
+            f"database server is running."
+        )
 
 
 if __name__ == "__main__":
